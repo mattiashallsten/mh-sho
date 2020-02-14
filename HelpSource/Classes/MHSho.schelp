@@ -1,0 +1,92 @@
+TITLE:: MHSho
+summary:: A SuperCollider implementation of the japanese mouth organ shō.
+categories:: Utilities
+
+DESCRIPTION::
+The instrument is commonly used in japanese emphasis::gagaku:: ensembles, alongside various string instruments, reed instruments and drums.
+
+
+CLASSMETHODS::
+
+METHOD:: new
+Create a new instance of MHSho.
+
+ARGUMENT:: root
+The root frequency, effectively the note E.
+
+ARGUMENT:: tempo
+The multiplication factor for the transitions (emphasis::te-utsuri::) -- higher is slower.
+
+ARGUMENT:: numPartials
+The number of partials for the additive synthesis algorithm.
+
+returns:: An instance of MHSho.
+
+
+INSTANCEMETHODS::
+
+METHOD:: teutsuri
+Change to a new emphasis::aitake:: according to the fixed emphasis::te-utsuri:: patterns.
+
+ARGUMENT:: newAitake
+The aitake to change to.
+
+returns:: The MHSho, playing a new aitake.
+
+METHOD:: root
+Change the root frequency.
+
+ARGUMENT:: newRoot
+
+returns:: The MHSho, with the new root frequency.
+
+METHOD:: setGate
+Set the master gate of the MHSho.
+
+ARGUMENT:: gate
+1 for gate on, 0 for gate off.
+
+returns:: The MHSho.
+
+METHOD:: tempo
+The multiplication factor for the transitions (emphasis::te-utsuri::) -- higher is slower.
+
+returns:: The MHSho.
+
+METHOD:: initSho
+Initialization of the MHSho (used by the .new method).
+
+returns:: A MHSho.
+
+METHOD:: reedGate
+Control the gate for the individual reeds -- used by the teutsuri method.
+
+ARGUMENT:: reed
+An array of reeds to change.
+
+ARGUMENT:: gate
+The gate argument for selected reeds.
+
+returns:: The MHSho.
+
+METHOD:: aitake
+Change to a aitake directly, ignoring the te-utsuri.
+
+ARGUMENT:: newAitake
+The wanted aitake.
+
+returns:: The MHSho.
+EXAMPLES::
+
+code::
+// server must be booted
+s.boot;
+
+x = MHSho(root: 500, tempo: 1, numPartials: 8);
+
+// change to ichi
+x.teutsuri(\ichi);
+
+// change to ku
+x.teutsuri(\ku);
+::
