@@ -1,7 +1,11 @@
 /*
+################
 ##### TODO #####
+################
 
 - Change the routines into functions, only call Routine(function) in the teutsuri method
+- Implement breathing mechanism
+- Add amp argument 
 */
 
 MHSho {
@@ -9,7 +13,7 @@ MHSho {
 	var <aitake = \kotsu, aitakeList, teutsuriList, notes, reeds, isPlaying=false;
 	var reedStatus;
 
-	*new {|root = 240, tempo = 1, numPartials = 8|
+	*new {|root = 500, tempo = 1, numPartials = 8|
 		^super.newCopyArgs(root, tempo, numPartials).initSho
 	}
 
@@ -271,7 +275,57 @@ MHSho {
 
 						this.aitake_(\bi)
 					},
-					
+					ku: Routine {
+						wait(1/4 * tempo);
+						this.reedGate(14, 0);
+
+						wait(1/32 * tempo);
+						this.reedGate(13, 0);
+
+						wait(1/32 * tempo);
+						this.reedGate(0, 0);
+
+						wait(1/8 * tempo);
+						this.reedGate([2, 3, 7], 1);
+
+						this.aitake_(\ku);
+					},
+					ju_II: Routine {
+						wait(9/32 * tempo);
+						this.reedGate(14, 0);
+
+						wait(1/32 * tempo);
+						this.reedGate(0, 0);
+
+						wait(1/8 * tempo);
+						this.reedGate(4, 0);
+						this.reedGate([12, 5, 6], 1);
+
+						this.aitake_(\ju_II);
+					},
+					ju: Routine {
+						wait(9/32 * tempo);
+						this.reedGate(14, 0);
+
+						wait(1/32 * tempo);
+						this.reedGate(0, 0);
+
+						wait(1/8 * tempo);
+						this.reedGate(4, 0);
+						this.reedGate([12, 6], 1);
+
+						this.aitake_(\ju);
+					},
+					gyo: Routine {
+						wait(5/16 * tempo);
+						this.reedGate(0, 0);
+
+						wait(1/8 * tempo);
+						this.reedGate(4, 0);
+						this.reedGate(12, 1);
+
+						this.aitake_(\gyo);
+					},
 				),
 				ku: (
 					bo: Routine {
@@ -730,6 +784,62 @@ MHSho {
 
 						this.aitake_(\gyo);
 					},
+					kotsu: Routine {
+						wait(5/16 * tempo);
+						this.reedGate(3, 0);
+
+						wait(1/8 * tempo);
+						this.reedGate(0, 1);
+
+						this.aitake_(\kotsu);
+					},
+					otsu: Routine {
+						wait(5/16 * tempo);
+						this.reedGate(3, 0);
+
+						wait(1/8 * tempo);
+						this.reedGate(12, 1);
+
+						this.aitake_(\otsu);
+					},
+					ichi: Routine {
+						wait(5/16 * tempo);
+						this.reedGate(13, 0);
+
+						wait(1/8 * tempo);
+						this.reedGate(1, 1);
+
+						this.aitake_(\ichi);
+					},
+					ku: Routine {
+						wait(5/16 * tempo);
+						this.reedGate([13, 14], 0);
+
+						wait(1/8 * tempo);
+						this.reedGate([7, 2], 1);
+
+						this.aitake_(\ku)
+					},
+					hi: Routine {
+						wait(5/16 * tempo);
+						this.reedGate(3, 0);
+
+						wait(1/8 * tempo);
+						this.reedGate(4, 0);
+						this.reedGate([10, 12], 1);
+
+						this.aitake_(\hi);
+					},
+					ge: Routine {
+						wait(5/16 * tempo);
+						this.reedGate([3, 13], 0);
+
+						wait(1/8 * tempo);
+						this.reedGate(4, 0);
+						this.reedGate([5, 7, 12], 1);
+
+						this.aitake_(\ge);
+					},
 				),
 				hi: (
 					otsu: Routine {
@@ -759,7 +869,199 @@ MHSho {
 
 						this.aitake_(\ju)
 					},
-				)	
+				),
+				otsu: (
+					bo: Routine {
+						wait(5/16 * tempo);
+						this.reedGate(12, 0);
+
+						wait(1/8 * tempo);
+						this.reedGate(3, 1);
+
+						this.aitake_(\bo);
+					},
+					hi: Routine {
+						wait(7/16 * tempo);
+						this.reedGate(4, 0);
+						this.reedGate(10, 1);
+
+						this.aitake_(\hi);
+					},
+					gyo: Routine {
+						wait(7/16 * tempo);
+						this.reedGate(4, 0);
+
+						this.aitake_(\gyo);
+					},
+					kotsu: Routine {
+						wait(5/16 * tempo);
+						this.reedGate(12, 0);
+
+						wait(1/8 * tempo);
+						this.reedGate(3, 1);
+
+						this.aitake_(\kotsu);
+					},
+					ju: Routine {
+						wait(5/16 * tempo);
+						this.reedGate(14, 0);
+
+						wait(1/8 * tempo);
+						this.reedGate(4, 0);
+						this.reedGate(6, 1);
+
+						this.aitake_(\ju)
+					},
+					ju_II: Routine {
+						wait(5/16 * tempo);
+						this.reedGate(14, 0);
+
+						wait(1/8 * tempo);
+						this.reedGate(4, 0);
+						this.reedGate([5, 6], 1);
+
+						this.aitake_(\ju_II)
+					},
+					ichi: Routine {
+						wait(5/16 * tempo);
+						this.reedGate([12, 13], 0);
+
+						wait(1/8 * tempo);
+						this.reedGate([1, 3], 1);
+
+						this.aitake_(\ichi)
+					},
+					ge: Routine {
+						wait(5/16 * tempo);
+						this.reedGate(13, 0);
+
+						wait(1/8 * tempo);
+						this.reedGate(4, 0);
+						this.reedGate([5, 7], 1);
+
+						this.aitake_(\ge)
+					},
+					bi: Routine {
+						wait(5/16 * tempo);
+						this.reedGate(13, 0);
+
+						wait(1/8 * tempo);
+						this.reedGate(4, 0);
+						this.reedGate([7, 10], 1);
+
+						this.aitake_(\bi)
+					},
+					ku: Routine {
+						wait(1/4 * tempo);
+						this.reedGate(14, 0);
+
+						wait(1/16 * tempo);
+						this.reedGate([12, 13], 0);
+
+						wait(1/8 * tempo);
+						this.reedGate([3, 7, 2], 1);
+
+						this.aitake_(\ku)
+					},
+				),
+				hi: (
+					ge: Routine {
+						wait(9/32 * tempo);
+						this.reedGate(13, 0);
+
+						wait(1/32 * tempo);
+						this.reedGate(10, 0);
+
+						wait(1/8 * tempo);
+						this.reedGate([5, 7], 1);
+
+						this.aitake_(\ge);
+					},
+					kotsu: Routine {
+						wait(9/32 * tempo);
+						this.reedGate(12, 0);
+
+						wait(1/32 * tempo);
+						this.reedGate(10, 0);
+
+						wait(1/8 * tempo);
+						this.reedGate([0, 4], 1);
+
+						this.aitake_(\kotsu);
+					},
+					bo: Routine {
+						wait(9/32 * tempo);
+						this.reedGate(12, 0);
+
+						wait(1/32 * tempo);
+						this.reedGate(10, 0);
+
+						wait(1/8 * tempo);
+						this.reedGate([3, 4], 1);
+
+						this.aitake_(\bo)
+					},
+					ichi: Routine {
+						wait(9/32 * tempo);
+						this.reedGate(12, 0);
+
+						wait(1/32 * tempo);
+						this.reedGate(10, 0);
+
+						wait(1/8 * tempo);
+						this.reedGate([1, 3, 4], 1);
+
+						this.aitake_(\ichi)
+					},
+				),
+				gyo: (
+					otsu: Routine {
+						wait(7/16 * tempo);
+						this.reedGate(4, 1);
+
+						this.aitake_(\otsu);
+					},
+					bi: Routine {
+						wait(5/16 * tempo);
+						this.reedGate(13, 0);
+
+						wait(1/8 * tempo);
+						this.reedGate([7, 10], 1);
+
+						this.aitake_(\bi)
+					},
+					ge: Routine {
+						wait(5/16 * tempo);
+						this.reedGate(13, 0);
+
+						wait(1/8 * tempo);
+						this.reedGate([5, 7], 1);
+
+						this.aitake_(\ge);
+
+					},
+					ichi: Routine {
+						wait(9/32 * tempo);
+						this.reedGate(13, 0);
+
+						wait(1/32 * tempo);
+						this.reedGate(12, 0);
+
+						wait(1/8 * tempo);
+						this.reedGate([1, 3, 4], 1);
+
+						this.aitake_(\ichi)
+					},
+					bo: Routine {
+						wait(5/16 * tempo);
+						this.reedGate(12, 0);
+
+						wait(1/8 * tempo);
+						this.reedGate([3, 4], 1);
+
+						this.aitake_(\bo)
+					}
+				)
 			)
 		}
 

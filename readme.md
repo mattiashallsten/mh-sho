@@ -1,6 +1,6 @@
 # MH-Shō
 
-An adaptation of the japanese mouth-organ Shō (笙) in `SuperCollider`. 
+An adaptation of the Japanese mouth-organ Shō (笙) in `SuperCollider`. 
 
 ## Installation
 
