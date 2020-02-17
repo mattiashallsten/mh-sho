@@ -35,4 +35,4 @@ There are 11 _aitake_ in total, as well as number seven (Jū) being featured twi
 
 Here are the aitake:
 
-![Aitake of Gagagku](contents/sho-aitake.pdf)
+![Aitake of Gagagku](contents/sho-aitake.png)
