@@ -29,3 +29,10 @@ x.aitake_(\ichi);
 
 x.teutsuri(\kotsu);
 ```
+
+## The aitake
+There are 11 _aitake_ in total, as well as number seven (Jū) being featured twice due to it having one version with the note F# and one without -- these two versions are named `ju` and `ju_II` in SuperCollider.
+
+Here are the aitake:
+
+![Aitake of Gagagku](contents/sho-aitake.pdf)
