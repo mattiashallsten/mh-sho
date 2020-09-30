@@ -6,33 +6,52 @@
 - Change the routines into functions, only call Routine(function) in the teutsuri method
 - Implement breathing mechanism
 - Add amp argument 
+
 */
 
 MHSho {
-	var <root, <>tempo, numPartials;
-	var <aitake = \kotsu, aitakeList, teutsuriList, notes, reeds, isPlaying=false;
-	var reedStatus;
+	var <root, <>tempo, amp, synth, numPartials, ampLag, out;
+	var <aitake = \kotsu, aitakeList, <teutsuriList, notes, reeds, <isPlaying=false;
+	var reedStatus, localSynth = \mh_sho_add;
 
-	*new {|root = 500, tempo = 1, numPartials = 8|
-		^super.newCopyArgs(root, tempo, numPartials).initSho
+	*new {|root = 500, tempo = 1, amp = 0.2, synth='saw', numPartials = 8, ampLag = 1.0, out = 0|
+		^super.newCopyArgs(root, tempo, amp, synth, numPartials, ampLag, out).initSho
 	}
 
 	initSho {
 
 		fork {
 		
-			SynthDef(\mh_sho, {|gate=0, freq=440, atk=3, rel=0.3, amp=0.2, out=0, harmonics=0|
+			SynthDef(\mh_sho_add, {|gate=0, freq=440, atk=3, rel=0.3, amp=0.2, out=0, harmonics=0|
 				var env = EnvGen.kr(Env.asr(atk, 1, rel), gate);
 				var sig = Mix.ar(numPartials.collect{|i|
-					SinOsc.ar(freq.lag(0.1) * (i+1)) / (i + 1);
-				});
+					SinOsc.ar((freq.lag(0.2) * (i+1)).clip(20, 18000)) / (i + 1);
+				}); 
 
-				sig = sig * env * amp.lag(1.0) * 0.7;
+				//sig = BLowPass.ar(sig, freq * 8);
 
-				Out.ar(out,sig!2)
+				sig = sig * env * amp.lag(ampLag) * 0.7;
+
+				Out.ar(out,sig)
+			}).add;
+
+			SynthDef(\mh_sho_saw, {|gate=0, freq=440, atk=3, rel=0.3, amp=0.2, out=0, harmonics=0|
+				var env = EnvGen.kr(Env.asr(atk, 1, rel), gate);
+				var sig = Saw.ar((freq.lag(0.1)).clip(20, 18000));
+
+				sig = BLowPass.ar(sig, (freq * 8).clip(20, 18000));
+
+				sig = sig * env * amp.lag(ampLag) * 0.7;
+
+				Out.ar(out,sig)
 			}).add;
 
 			wait(0.1);
+
+			switch(synth,
+				'add', {localSynth = \mh_sho_add},
+				'saw', {localSynth = \mh_sho_saw},
+				{localSynth = \mh_sho_add});
 
 			notes = [
 				2/3, // 0: a
@@ -48,8 +67,8 @@ MHSho {
 				128/81, // 10: c
 				27/16, // 11: c#
 				16/9, // 12: d
-				2, // 14: d
-				9/4 // 15: e
+				2, // 14: e
+				9/4 // 15: f#
 			];
 
 			aitakeList = (
@@ -67,11 +86,11 @@ MHSho {
 			);
 
 			reeds = notes.collect{|item, i|
-				Synth(\mh_sho, [
+				Synth(localSynth, [
 					\freq, root * notes[i],
 					\gate, 0,
-					\amp, 0.1,
-					\out, 0,
+					\amp, amp,
+					\out, out,
 					\atk, 0.3,
 					\rel, 0.5,
 				])
@@ -83,7 +102,7 @@ MHSho {
 
 			teutsuriList = (
 				ichi: (
-					bo: Routine {
+					bo: {
 						wait(5/16 * tempo);
 						this.reedGate(1, 0);
 				
@@ -92,7 +111,7 @@ MHSho {
 
 						this.aitake_(\bo);
 					},
-					kotsu: Routine {
+					kotsu: {
 						wait(5/16 * tempo);
 						this.reedGate(1, 0);
 						this.reedGate(3, 0);
@@ -103,7 +122,7 @@ MHSho {
 
 						this.aitake_(\kotsu);
 					},
-					otsu: Routine {
+					otsu: {
 						wait(5/16 * tempo);
 						this.reedGate(1, 0);
 						this.reedGate(3, 0);
@@ -114,7 +133,7 @@ MHSho {
 
 						this.aitake_(\otsu);
 					},
-					ku: Routine {
+					ku: {
 						wait(5/16 * tempo);
 						this.reedGate(1, 0);
 						this.reedGate(14, 0);
@@ -125,7 +144,7 @@ MHSho {
 
 						this.aitake_(\ku);
 					},
-					gyo: Routine {
+					gyo: {
 						wait(5/16 * tempo);
 						this.reedGate(1, 0);
 						this.reedGate(3, 0);
@@ -137,7 +156,7 @@ MHSho {
 
 						this.aitake_(\gyo);
 					},
-					hi: Routine {
+					hi: {
 						wait(5/16 * tempo);
 						this.reedGate(1, 0);
 						this.reedGate(3, 0);
@@ -150,7 +169,7 @@ MHSho {
 
 						this.aitake_(\hi);
 					},
-					ge: Routine {
+					ge: {
 						wait(5/16 * tempo);
 						this.reedGate(1, 0);
 						this.reedGate(3, 0);
@@ -163,7 +182,7 @@ MHSho {
 
 						this.aitake_(\ge);
 					},
-					bi: Routine {
+					bi: {
 						wait(5/16 * tempo);
 						this.reedGate(1, 0);
 						this.reedGate(3, 0);
@@ -176,7 +195,7 @@ MHSho {
 
 						this.aitake_(\bi);
 					},
-					ju_II: Routine {
+					ju_II: {
 						wait(1/4 * tempo);
 						this.reedGate(14, 0);
 
@@ -193,7 +212,7 @@ MHSho {
 
 						this.aitake_(\ju_II);
 					},
-					ju: Routine {
+					ju: {
 						wait(1/4 * tempo);
 						this.reedGate(14, 0);
 
@@ -206,7 +225,7 @@ MHSho {
 
 						this.aitake_(\ju);
 					},
-					kotsu: Routine {
+					kotsu: {
 						wait(5/16 * tempo);
 						this.reedGate(3, 0);
 
@@ -218,7 +237,7 @@ MHSho {
 					},
 				),
 				kotsu: (
-					bo: Routine {
+					bo: {
 						wait(5/16 * tempo);
 						this.reedGate(0, 0);
 
@@ -227,7 +246,7 @@ MHSho {
 
 						this.aitake_(\bo);
 					},
-					otsu: Routine {
+					otsu: {
 						wait(5/16 * tempo);
 						this.reedGate(0, 0);
 
@@ -236,7 +255,7 @@ MHSho {
 
 						this.aitake_(\otsu);
 					},
-					ichi: Routine {
+					ichi: {
 						wait(5/16 * tempo);
 						this.reedGate([0, 13], 0);
 
@@ -245,7 +264,7 @@ MHSho {
 
 						this.aitake_(\ichi);
 					},
-					hi: Routine {
+					hi: {
 						wait(5/16 * tempo);
 						this.reedGate(0, 0);
 
@@ -255,7 +274,7 @@ MHSho {
 
 						this.aitake_(\hi);
 					},
-					ge: Routine {
+					ge: {
 						wait(5/16 * tempo);
 						this.reedGate([0, 13], 0);
 
@@ -265,7 +284,7 @@ MHSho {
 
 						this.aitake_(\ge);
 					},
-					bi: Routine {
+					bi: {
 						wait(5/16 * tempo);
 						this.reedGate([0, 13], 0);
 
@@ -275,7 +294,7 @@ MHSho {
 
 						this.aitake_(\bi)
 					},
-					ku: Routine {
+					ku: {
 						wait(1/4 * tempo);
 						this.reedGate(14, 0);
 
@@ -290,7 +309,7 @@ MHSho {
 
 						this.aitake_(\ku);
 					},
-					ju_II: Routine {
+					ju_II: {
 						wait(9/32 * tempo);
 						this.reedGate(14, 0);
 
@@ -303,7 +322,7 @@ MHSho {
 
 						this.aitake_(\ju_II);
 					},
-					ju: Routine {
+					ju: {
 						wait(9/32 * tempo);
 						this.reedGate(14, 0);
 
@@ -316,7 +335,7 @@ MHSho {
 
 						this.aitake_(\ju);
 					},
-					gyo: Routine {
+					gyo: {
 						wait(5/16 * tempo);
 						this.reedGate(0, 0);
 
@@ -328,7 +347,7 @@ MHSho {
 					},
 				),
 				ku: (
-					bo: Routine {
+					bo: {
 						wait(5/16 * tempo);
 						this.reedGate(7, 0);
 
@@ -341,7 +360,7 @@ MHSho {
 
 						this.aitake_(\bo);
 					},
-					ichi: Routine {
+					ichi: {
 						wait(5/16 * tempo);
 						this.reedGate(7, 0);
 
@@ -354,7 +373,7 @@ MHSho {
 
 						this.aitake_(\ichi);
 					},
-					otsu: Routine {
+					otsu: {
 						wait(5/16 * tempo);
 						this.reedGate([3, 7], 0);
 
@@ -367,7 +386,7 @@ MHSho {
 
 						this.aitake_(\otsu);
 					},
-					kotsu: Routine {
+					kotsu: {
 						wait(5/16 * tempo);
 						this.reedGate(3, 0);
 
@@ -383,7 +402,7 @@ MHSho {
 
 						this.aitake_(\kotsu);
 					},
-					ge: Routine {
+					ge: {
 						wait(5/16 * tempo);
 						this.reedGate([3, 2], 0);
 
@@ -393,7 +412,7 @@ MHSho {
 
 						this.aitake_(\ge);
 					},
-					bi: Routine {
+					bi: {
 						wait(5/16 * tempo);
 						this.reedGate([3, 2], 0);
 
@@ -403,7 +422,7 @@ MHSho {
 
 						this.aitake_(\bi);
 					},
-					hi: Routine {
+					hi: {
 						wait(1/4 * tempo);
 						this.reedGate(3, 0);
 						
@@ -418,14 +437,14 @@ MHSho {
 					}
 				),
 				ge: (
-					bi: Routine {
+					bi: {
 						wait(7/16 * tempo);
 						this.reedGate(5, 0);
 						this.reedGate(10, 0);
 
 						this.aitake_(\bi);
 					},
-					ju_II: Routine {
+					ju_II: {
 						wait(5/16 * tempo);
 						this.reedGate([7, 14], 0);
 
@@ -434,7 +453,7 @@ MHSho {
 
 						this.aitake_(\ju_II);
 					},
-					otsu: Routine {
+					otsu: {
 						wait(5/16 * tempo);
 						this.reedGate(5, 0);
 
@@ -447,7 +466,7 @@ MHSho {
 
 						this.aitake_(\otsu);
 					},
-					hi: Routine {
+					hi: {
 						wait(5/16 * tempo);
 						this.reedGate(7, 0);
 
@@ -457,14 +476,14 @@ MHSho {
 
 						this.aitake_(\hi);
 					},
-					gyo: Routine {
+					gyo: {
 						wait(7/16 * tempo);
 						this.reedGate([5, 7], 0);
 						this.reedGate(13, 1);
 						
 						this.aitake_(\gyo);
 					},
-					kotsu: Routine {
+					kotsu: {
 						wait(5/16 * tempo);
 						this.reedGate([5, 12], 0);
 
@@ -477,7 +496,7 @@ MHSho {
 
 						this.aitake_(\kotsu);
 					},
-					bo: Routine {
+					bo: {
 						wait(5/16 * tempo);
 						this.reedGate([5, 12], 0);
 
@@ -490,7 +509,7 @@ MHSho {
 
 						this.aitake_(\bo);
 					},
-					ichi: Routine {
+					ichi: {
 						wait(1/4 * tempo);
 						this.reedGate(12, 0);
 						
@@ -502,7 +521,7 @@ MHSho {
 
 						this.aitake_(\ichi);
 					},
-					ku: Routine {
+					ku: {
 						wait(1/4 * tempo);
 						this.reedGate(14, 0);
 
@@ -514,7 +533,7 @@ MHSho {
 
 						this.aitake_(\ku);
 					},
-					ju: Routine {
+					ju: {
 						wait(5/16 * tempo);
 						this.reedGate([7, 14], 0);
 
@@ -526,13 +545,13 @@ MHSho {
 					},
 				),
 				ju_II: (
-					ju: Routine {
+					ju: {
 						wait(7/16 * tempo);
 						this.reedGate(5, 0);
 
 						this.aitake_(\ju);
 					},
-					otsu: Routine {
+					otsu: {
 						wait(5/16 * tempo);
 						this.reedGate(5, 0);
 
@@ -542,7 +561,7 @@ MHSho {
 
 						this.aitake_(\otsu);
 					},
-					hi: Routine {
+					hi: {
 						wait(5/16 * tempo);
 						this.reedGate(5, 0);
 
@@ -552,7 +571,7 @@ MHSho {
 
 						this.aitake_(\hi);
 					},
-					ge: Routine {
+					ge: {
 						wait(5/16 * tempo);
 						this.reedGate(13, 0);
 
@@ -562,7 +581,7 @@ MHSho {
 
 						this.aitake_(\ge);
 					},
-					kotsu: Routine {
+					kotsu: {
 						wait(5/16 * tempo);
 						this.reedGate([5, 12], 0);
 
@@ -572,7 +591,7 @@ MHSho {
 
 						this.aitake_(\kotsu);
 					},
-					bo: Routine {
+					bo: {
 						wait(5/16 * tempo);
 						this.reedGate([12, 5], 0);
 
@@ -582,7 +601,7 @@ MHSho {
 
 						this.aitake_(\bo);
 					},
-					ichi: Routine {
+					ichi: {
 						wait(5/16 * tempo);
 						this.reedGate([5, 12], 0);
 
@@ -592,7 +611,7 @@ MHSho {
 
 						this.aitake_(\ichi)
 					},
-					ku: Routine {
+					ku: {
 						wait(1/4 * tempo);
 						this.reedGate(13, 0);
 
@@ -606,13 +625,13 @@ MHSho {
 					},
 				),
 				ju: (
-					ju_II: Routine {
+					ju_II: {
 						wait(7/16 * tempo);
 						this.reedGate(5, 1);
 
 						this.aitake_(\ju_II);
 					},
-					otsu: Routine {
+					otsu: {
 						wait(5/16 * tempo);
 						this.reedGate(6, 0);
 
@@ -621,7 +640,7 @@ MHSho {
 
 						this.aitake_(\otsu);
 					},
-					kotsu: Routine {
+					kotsu: {
 						wait(5/16 * tempo);
 						this.reedGate(12, 0);
 
@@ -631,7 +650,7 @@ MHSho {
 
 						this.aitake_(\kotsu);
 					},
-					bo: Routine {
+					bo: {
 						wait(5/16 * tempo);
 						this.reedGate(12, 0);
 
@@ -641,7 +660,7 @@ MHSho {
 
 						this.aitake_(\bo);
 					},
-					ichi: Routine {
+					ichi: {
 						wait(5/16 * tempo);
 						this.reedGate([12, 13], 0);
 
@@ -651,7 +670,7 @@ MHSho {
 
 						this.aitake_(\ichi)
 					},
-					hi: Routine {
+					hi: {
 						wait(5/16 * tempo);
 						this.reedGate(6, 0);
 
@@ -660,7 +679,7 @@ MHSho {
 
 						this.aitake_(\hi);
 					},
-					ge: Routine {
+					ge: {
 						wait(5/16 * tempo);
 						this.reedGate(13, 0);
 
@@ -672,7 +691,7 @@ MHSho {
 					},
 				),
 				bi: (
-					ge: Routine {
+					ge: {
 						wait(5/16 * tempo);
 						this.reedGate(10, 0);
 
@@ -681,7 +700,7 @@ MHSho {
 
 						this.aitake_(\ge);
 					},
-					otsu: Routine {
+					otsu: {
 						wait(5/16 * tempo);
 						this.reedGate(10, 0);
 
@@ -694,7 +713,7 @@ MHSho {
 
 						this.aitake_(\otsu);
 					},
-					gyo: Routine {
+					gyo: {
 						wait(5/16 * tempo);
 						this.reedGate(7, 0);
 
@@ -704,7 +723,7 @@ MHSho {
 
 						this.aitake_(\gyo);
 					},
-					bo: Routine {
+					bo: {
 						wait(5/16 * tempo);
 						this.reedGate([12, 10], 0);
 
@@ -717,7 +736,7 @@ MHSho {
 
 						this.aitake_(\bo);
 					},
-					kotsu: Routine {
+					kotsu: {
 						wait(5/16 * tempo);
 						this.reedGate([10, 12], 0);
 
@@ -730,7 +749,7 @@ MHSho {
 
 						this.aitake_(\kotsu);
 					},
-					ju_II: Routine {
+					ju_II: {
 						wait(1/4 * tempo);
 						this.reedGate(14, 0);
 
@@ -744,7 +763,7 @@ MHSho {
 					},
 				),
 				bo: (
-					bi: Routine {
+					bi: {
 						wait(5/16 * tempo);
 						this.reedGate([3, 13], 0);
 
@@ -754,7 +773,7 @@ MHSho {
 						
 						this.aitake_(\bi);
 					},
-					ju: Routine {
+					ju: {
 						wait(5/16 * tempo);
 						this.reedGate([3, 14], 0);
 
@@ -764,7 +783,7 @@ MHSho {
 
 						this.aitake_(\ju);
 					},
-					ju_II: Routine {
+					ju_II: {
 						wait(5/16 * tempo);
 						this.reedGate([3, 14], 0);
 
@@ -774,7 +793,7 @@ MHSho {
 
 						this.aitake_(\ju_II);
 					},
-					gyo: Routine {
+					gyo: {
 						wait(5/16 * tempo);
 						this.reedGate(3, 0);
 
@@ -784,7 +803,7 @@ MHSho {
 
 						this.aitake_(\gyo);
 					},
-					kotsu: Routine {
+					kotsu: {
 						wait(5/16 * tempo);
 						this.reedGate(3, 0);
 
@@ -793,7 +812,7 @@ MHSho {
 
 						this.aitake_(\kotsu);
 					},
-					otsu: Routine {
+					otsu: {
 						wait(5/16 * tempo);
 						this.reedGate(3, 0);
 
@@ -802,7 +821,7 @@ MHSho {
 
 						this.aitake_(\otsu);
 					},
-					ichi: Routine {
+					ichi: {
 						wait(5/16 * tempo);
 						this.reedGate(13, 0);
 
@@ -811,7 +830,7 @@ MHSho {
 
 						this.aitake_(\ichi);
 					},
-					ku: Routine {
+					ku: {
 						wait(5/16 * tempo);
 						this.reedGate([13, 14], 0);
 
@@ -820,7 +839,7 @@ MHSho {
 
 						this.aitake_(\ku)
 					},
-					hi: Routine {
+					hi: {
 						wait(5/16 * tempo);
 						this.reedGate(3, 0);
 
@@ -830,7 +849,7 @@ MHSho {
 
 						this.aitake_(\hi);
 					},
-					ge: Routine {
+					ge: {
 						wait(5/16 * tempo);
 						this.reedGate([3, 13], 0);
 
@@ -842,7 +861,7 @@ MHSho {
 					},
 				),
 				hi: (
-					otsu: Routine {
+					otsu: {
 						wait(5/16 * tempo);
 						this.reedGate(10, 0);
 
@@ -851,7 +870,7 @@ MHSho {
 
 						this.aitake_(\otsu);
 					},
-					ju_II: Routine {
+					ju_II: {
 						wait(5/16 * tempo);
 						this.reedGate([10, 14], 0);
 
@@ -860,7 +879,7 @@ MHSho {
 
 						this.aitake_(\ju_II)
 					},
-					ju: Routine {
+					ju: {
 						wait(5/16 * tempo);
 						this.reedGate([10, 14], 0);
 
@@ -871,7 +890,7 @@ MHSho {
 					},
 				),
 				otsu: (
-					bo: Routine {
+					bo: {
 						wait(5/16 * tempo);
 						this.reedGate(12, 0);
 
@@ -880,20 +899,20 @@ MHSho {
 
 						this.aitake_(\bo);
 					},
-					hi: Routine {
+					hi: {
 						wait(7/16 * tempo);
 						this.reedGate(4, 0);
 						this.reedGate(10, 1);
 
 						this.aitake_(\hi);
 					},
-					gyo: Routine {
+					gyo: {
 						wait(7/16 * tempo);
 						this.reedGate(4, 0);
 
 						this.aitake_(\gyo);
 					},
-					kotsu: Routine {
+					kotsu: {
 						wait(5/16 * tempo);
 						this.reedGate(12, 0);
 
@@ -902,7 +921,7 @@ MHSho {
 
 						this.aitake_(\kotsu);
 					},
-					ju: Routine {
+					ju: {
 						wait(5/16 * tempo);
 						this.reedGate(14, 0);
 
@@ -912,7 +931,7 @@ MHSho {
 
 						this.aitake_(\ju)
 					},
-					ju_II: Routine {
+					ju_II: {
 						wait(5/16 * tempo);
 						this.reedGate(14, 0);
 
@@ -922,7 +941,7 @@ MHSho {
 
 						this.aitake_(\ju_II)
 					},
-					ichi: Routine {
+					ichi: {
 						wait(5/16 * tempo);
 						this.reedGate([12, 13], 0);
 
@@ -931,7 +950,7 @@ MHSho {
 
 						this.aitake_(\ichi)
 					},
-					ge: Routine {
+					ge: {
 						wait(5/16 * tempo);
 						this.reedGate(13, 0);
 
@@ -941,7 +960,7 @@ MHSho {
 
 						this.aitake_(\ge)
 					},
-					bi: Routine {
+					bi: {
 						wait(5/16 * tempo);
 						this.reedGate(13, 0);
 
@@ -951,7 +970,7 @@ MHSho {
 
 						this.aitake_(\bi)
 					},
-					ku: Routine {
+					ku: {
 						wait(1/4 * tempo);
 						this.reedGate(14, 0);
 
@@ -965,7 +984,7 @@ MHSho {
 					},
 				),
 				hi: (
-					ge: Routine {
+					ge: {
 						wait(9/32 * tempo);
 						this.reedGate(13, 0);
 
@@ -977,7 +996,7 @@ MHSho {
 
 						this.aitake_(\ge);
 					},
-					kotsu: Routine {
+					kotsu: {
 						wait(9/32 * tempo);
 						this.reedGate(12, 0);
 
@@ -989,7 +1008,7 @@ MHSho {
 
 						this.aitake_(\kotsu);
 					},
-					bo: Routine {
+					bo: {
 						wait(9/32 * tempo);
 						this.reedGate(12, 0);
 
@@ -1001,7 +1020,7 @@ MHSho {
 
 						this.aitake_(\bo)
 					},
-					ichi: Routine {
+					ichi: {
 						wait(9/32 * tempo);
 						this.reedGate(12, 0);
 
@@ -1015,13 +1034,13 @@ MHSho {
 					},
 				),
 				gyo: (
-					otsu: Routine {
+					otsu: {
 						wait(7/16 * tempo);
 						this.reedGate(4, 1);
 
 						this.aitake_(\otsu);
 					},
-					bi: Routine {
+					bi: {
 						wait(5/16 * tempo);
 						this.reedGate(13, 0);
 
@@ -1030,7 +1049,7 @@ MHSho {
 
 						this.aitake_(\bi)
 					},
-					ge: Routine {
+					ge: {
 						wait(5/16 * tempo);
 						this.reedGate(13, 0);
 
@@ -1040,7 +1059,7 @@ MHSho {
 						this.aitake_(\ge);
 
 					},
-					ichi: Routine {
+					ichi: {
 						wait(9/32 * tempo);
 						this.reedGate(13, 0);
 
@@ -1052,7 +1071,7 @@ MHSho {
 
 						this.aitake_(\ichi)
 					},
-					bo: Routine {
+					bo: {
 						wait(5/16 * tempo);
 						this.reedGate(12, 0);
 
@@ -1071,56 +1090,46 @@ MHSho {
 		if(aitakeList[newAitake].notNil, {
 			aitake = newAitake;
 			this.setGate(1);
-			isPlaying = true;
 		}, {
 			"Aitake does not exist!".postln
 		});
 	}
 
 	teutsuri {|newAitake = \kotsu|
-		if(isPlaying,
-			{
-				if(teutsuriList[aitake].notNil,
-					{
-						if(teutsuriList[aitake][newAitake].notNil,
-							{
-								fork {
-									// make sure everything's correct with the selected aitake
-									this.aitake_(aitake);
-									
-									// play the routine for changing to the new aitake
-									teutsuriList[aitake][newAitake].play;
+		if(isPlaying, {
+			if(teutsuriList[aitake].notNil,	{
+				if(teutsuriList[aitake][newAitake].notNil, {
+					fork {
+						// make sure everything's correct with the selected aitake
+						this.aitake_(aitake);
+						
+						// play the routine for changing to the new aitake
+						Routine(teutsuriList[aitake][newAitake]).play;
 
-									// reset all the routines
-									teutsuriList.do{|item|
-										if(item.notNil,
-											{
-												item.do{|routine|
-													if(routine.notNil,
-														{
-															routine.reset
-														}
-													);
-												}
-											}
-										);
-									};
-								}
-							},
-							{
-								"Te-utsuri not implemented yet/not possible".postln
-							}
-						)
-					},
-					{
-						"Te-utsuri not implemented yet/not possible.".postln
+						// // reset all the routines
+						// teutsuriList.do{|item|
+						// 	if(item.notNil,
+						// 		{
+						// 			item.do{|routine|
+						// 				if(routine.notNil,
+						// 					{
+						// 						routine.reset
+						// 					}
+						// 				);
+						// 			}
+						// 		}
+						// 	);
+						// };
 					}
-				);
-			},
-			{
-				this.aitake_(newAitake)
-			}
-		);
+				}, {
+					"Te-utsuri not implemented yet/not possible".postln;
+				})
+			}, {
+				"Te-utsuri not implemented yet/not possible.".postln;
+			});
+		}, {
+			this.aitake_(newAitake)
+		});
 	}
 
 	reedGate {|reed = 0, gate = 0|
@@ -1149,10 +1158,31 @@ MHSho {
 		)
 	}
 
+	amp_ {|newAmp = 0.2|
+		amp = newAmp;
+		reeds.do(_.set(\amp, amp))
+	}
+
 	root_ {|newRoot|
 		root = newRoot; 
 		reeds.do{|item, i|
 			item.set(\freq, root * notes[i])};
 	}
-		
+
+	aitakeList {
+		var msg = "Available aitakes: kotsu, ichi, ku, bo, otsu, ge, ju, ju_II, bi, gyo, hi.";
+
+		msg.postln;
+	}
+
+	aitakeRef {|withEmacs=false|
+		var path = Platform.userExtensionDir ++ "/mh-sho/";
+		var cmd = if(withEmacs, {
+			"emacsclient -n"
+		}, {
+			"open"
+		});
+
+		(cmd ++ " " ++ (path ++ "contents/sho-aitake.png").shellQuote).unixCmd;
+	}
 }
