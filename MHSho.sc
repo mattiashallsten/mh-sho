@@ -1185,6 +1185,10 @@ MHSho {
 			"open"
 		});
 
-		(cmd ++ " " ++ (path ++ "contents/sho-aitake.png").shellQuote).unixCmd;
+		Platform.switch(
+			\osx, {(cmd ++ " " ++ (path ++ "contents/sho-aitake.png").shellQuote).unixCmd;},
+			\window, {"Not implemented in Window!"},
+			\linux, {"Not implemented in Linux!"}
+		);
 	}
 }
