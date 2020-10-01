@@ -3,9 +3,9 @@
 ##### TODO #####
 ################
 
-- Change the routines into functions, only call Routine(function) in the teutsuri method
-- Implement breathing mechanism
-- Add amp argument 
+- [ ] Change the routines into functions, only call Routine(function) in the teutsuri method
+- [ ] Implement breathing mechanism
+- [x] Add amp argument 
 
 */
 
