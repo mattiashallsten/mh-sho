@@ -76,6 +76,16 @@ ARGUMENT:: newAitake
 The wanted aitake.
 
 returns:: The MHSho.
+
+METHOD:: reedGate
+Set the gate for one reed. Used by code::.aitake_:: and code::.teutsuri::.
+
+ARGUMENT:: reed
+The reed to change. Can be integer or array of integers.
+
+ARGUMENT:: gate
+The gate value, either 0 or 1.
+
 EXAMPLES::
 
 code::

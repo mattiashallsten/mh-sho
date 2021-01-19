@@ -14,6 +14,24 @@ Aitake {
 			\hi, {this.hi}
 		)
 	}
+
+	aitakeRef {|withEmacs=false|
+		var path = Platform.userExtensionDir ++ "/mh-sho/";
+		var cmd = if(withEmacs, {
+			"emacsclient -n"
+		}, {
+			"open"
+		});
+
+		Platform.case(
+			\osx, {
+				"Opening aitake reference".postln;
+				(cmd ++ " " ++ (path ++ "contents/sho-aitake.png").shellQuote).unixCmd;
+			},
+			\window, {"Not implemented in Window!"},
+			\linux, {"Not implemented in Linux!"}
+		);
+	}
 	
 	ju {
 		^[
