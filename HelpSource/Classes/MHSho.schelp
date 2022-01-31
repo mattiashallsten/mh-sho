@@ -17,8 +17,31 @@ The root frequency, effectively the note E.
 ARGUMENT:: tempo
 The multiplication factor for the transitions (emphasis::te-utsuri::) -- higher is slower.
 
-ARGUMENT:: numPartials
-The number of partials for the additive synthesis algorithm.
+ARGUMENT:: amp
+The loudness of the MHSho.
+
+ARGUMENT:: tuning
+
+The selected tuning system of the MHSho. Can be either code::'pyth'::
+(pythagorean tuning, default) or code::'et12':: (twelwe-tone equal
+temperament).
+
+ARGUMENT:: ampLag
+
+The lag amount when changing the amp variable.
+
+ARGUMENT:: out
+
+The selected output channel.
+
+ARGUMENT:: outmode
+
+If set to code::'mono'::, send all the virtual reeds to one output. If set to
+code::'split'::, send the virtual reeds to seperate outputs.
+
+ARGUMENT:: target
+
+The code::'target':: argument when creating the synths.
 
 returns:: An instance of MHSho.
 
@@ -92,7 +115,7 @@ code::
 // server must be booted
 s.boot;
 
-x = MHSho(root: 500, tempo: 1, numPartials: 8);
+x = MHSho(root: 500, tempo: 1);
 
 // change to ichi
 x.teutsuri(\ichi);
