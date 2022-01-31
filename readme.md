@@ -38,7 +38,7 @@ Is described in detail in the help documentation. Basically:
 ``` sclang
 s.boot;
 
-x = MHSho(root: 500, tempo: 1, numPartials: 8);
+x = MHSho(root: 500, tempo: 1);
 
 x.aitake_(\ichi);
 

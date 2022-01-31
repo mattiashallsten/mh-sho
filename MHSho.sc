@@ -12,14 +12,14 @@
 
 // * Class: MHSho
 MHSho {
-	var <root, <>tempo, amp, tuning, synth, numPartials, ampLag, out, outmode;
-	classvar server;
-	classvar <aitake = \kotsu, aitakeList, <teutsuriList, notes, <reeds, <isPlaying=false;
-	classvar <reedStatus, localSynth = \mh_sho_add;
+	var <root, <>tempo, amp, tuning, ampLag, out, outmode, target;
+	var server;
+	var <aitake = \kotsu, aitakeList, <teutsuriList, notes, <reeds, <isPlaying=false;
+	var <reedStatus, localSynth = \mh_sho_saw;
 
 	// * Class method: *new
-	*new {|root = 644.27204305697, tempo = 2, amp = 0.2, tuning='pyth', synth='saw', numPartials = 8, ampLag = 1.0, out = 0, outmode = 'mono'|
-		^super.newCopyArgs(root, tempo, amp, tuning, synth, numPartials, ampLag, out, outmode).initSho
+	*new {|root = 644.27204305697, tempo = 2, amp = 0.2, tuning='pyth', ampLag = 1.0, out = 0, outmode = 'mono', target = 0|
+		^super.newCopyArgs(root, tempo, amp, tuning, ampLag, out, outmode, target).initSho
 	}
 
 	// * Instance method: initSho
@@ -31,39 +31,19 @@ MHSho {
 		});
 		
 		server.waitForBoot {
-
-			// * SynthDef: mh_sho_add
-			SynthDef(\mh_sho_add, {|gate=0, freq=440, atk=3, rel=0.3, amp=0.2, out=0, harmonics=0|
-				var env = EnvGen.kr(Env.asr(atk, 1, rel), gate);
-				var sig = Mix.ar(numPartials.collect{|i|
-					SinOsc.ar((freq.lag(0.2) * (i+1)).clip(20, 18000)) / (i + 1);
-				}); 
-
-				//sig = BLowPass.ar(sig, freq * 8);
-
-				sig = sig * env * amp.lag(ampLag) * 0.7;
-
-				Out.ar(out,sig)
-			}).add;
-
 			// * SynthDef: mh_sho_saw
-			SynthDef(\mh_sho_saw, {|gate=0, freq=440, atk=3, rel=0.3, amp=0.2, out=0, harmonics=0|
+			SynthDef(\mh_sho_saw, {|gate=0, freq=440, atk=3, rel=0.3, amp=0.2, out=0, harmonics=0,finalgate=1|
 				var env = EnvGen.kr(Env.asr(atk, 1, rel), gate);
 				var sig = Saw.ar((freq.lag(0.1)).clip(20, 18000));
 
 				sig = BLowPass.ar(sig, (freq * 8).clip(20, 18000));
 
-				sig = sig * env * amp.lag(ampLag) * 0.7;
+				sig = sig * env * amp.lag(ampLag) * 0.7 * EnvGen.kr(Env.asr(),finalgate,doneAction:2);
 
 				Out.ar(out,sig)
 			}).add;
 
 			server.sync;
-
-			switch(synth,
-				'add', {localSynth = \mh_sho_add},
-				'saw', {localSynth = \mh_sho_saw},
-				{localSynth = \mh_sho_add});
 
 			this.setNotes(tuning);
 			this.loadAitakeList;
@@ -91,6 +71,12 @@ MHSho {
 
 		}
 
+	}
+	// * Instance method: free
+	free {
+		reeds.do{|item|
+			item.set(\finalgate, 0)
+		};
 	}
 
 	// * Instance method: aitake_
@@ -175,7 +161,7 @@ MHSho {
 				\out, reed_output,
 				\atk, 0.3,
 				\rel, 0.5,
-			])
+			], target)
 		};
 
 		reedStatus = reeds.collect{
